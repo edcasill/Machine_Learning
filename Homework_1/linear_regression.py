@@ -95,16 +95,53 @@ class linear_model:
         r2 = 1 - (rss / ss_total)
         print(f'R² is : {r2}')
 
+    def test_data(self, new_data, sb=False):
+        """
+        Test the imput data
+        
+        :param self: Description
+        :param new_data: Description
+        :param sb: Description
+        """
+        age = float(new_data[0])
+        sex = 1 if new_data[1] == 'male' else 0
+        bmi = float(new_data[2])
+        children = float(new_data[3])
+        smoker = 1 if new_data[4] == 'yes' else 0
+        regions = ['northeast', 'northwest', 'southeast', 'southwest']
+        region_encoded = [1.0 if new_data[5] == r else 0.0 for r in regions]
+
+        # characteristic vector
+        features = [1.0, age, float(sex), bmi, children, float(smoker)]
+
+        if sb:
+             smoker_bmi = float(smoker * bmi)
+             features.append(smoker_bmi)
+        features = features + region_encoded
+        X_new_aug = jnp.array(features)
+        prediction = jnp.dot(X_new_aug, self.beta)
+
+        return prediction
+
 
 def main():
+    smoker_bmi = True
     model = linear_model("insurance.csv")
 
-    model.extract_data(sb=False)
+    model.extract_data(sb=smoker_bmi)
     model.separate_type_data()
     model.augmented_X()
     model.calculate_beta()
-    model.linear_regression()
+    predict = model.linear_regression()
+    print('_'*60)
+    print(f'Prediction for dataset is: {predict}')
     model.calculate_error()
+
+    print('_'*60)
+    test = [27, 'male', 25, 0, 'no', 'southwest', 20000]
+    test_result = model.test_data(test, sb=smoker_bmi)
+    print(f'New data {test}')
+    print(f'Insurance is: {test_result}')
 
 
 if __name__ == "__main__":
