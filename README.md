@@ -6,6 +6,8 @@ This repo contains scripts and statistical analysis that I use during the course
 Linear Regression aplied on a insurance estimator and breast cancer data.
 #### TO DO
 - [ ] Export the notebook into a functional python script
+### Homework 2
+Gradient descent and logistic regression
 
 ## Software used
 ### JAX
