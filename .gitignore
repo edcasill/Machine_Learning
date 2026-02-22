@@ -10,3 +10,8 @@
 *.gz
 *.out
 img
+test_db-master/
+employee_db-master/
+employee_db-master.zip
+tempCode*
+data/
