@@ -2,7 +2,7 @@
 *.vscode
 *.tmp
 *.lyx~
-*.tex
+.tex
 *.log
 *.aux
 *.png
@@ -10,7 +10,6 @@
 *.gz
 *.out
 img
-test_db-master/
 employee_db-master/
 employee_db-master.zip
 tempCode*
