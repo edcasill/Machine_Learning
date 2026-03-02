@@ -7,7 +7,9 @@ Linear Regression aplied on a insurance estimator and breast cancer data.
 #### TO DO
 - [ ] Export the notebook into a functional python script
 ### Homework 2
-Gradient descent and logistic regression
+Gradient descent and logistic regression.
+
+For the DB, reffer to the document Homework_2
 
 ## Software used
 ### JAX
