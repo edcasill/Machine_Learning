@@ -1,0 +1,253 @@
+\documentclass[conference, onecolumn]{IEEEtran}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{captdef}
+\usepackage{float}
+\usepackage{bm}
+\usepackage{anyfontsize}
+\usepackage{enumerate}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{attachfile}
+\author{Edwing Alexis Casillas Valencia\\
+	\today}
+\title{Homework III - Introduction to Machine Learning}
+%\date{October 7 2025}
+\graphicspath{C:\Users\Narut\OneDrive\Documentos\1 Maestria\Cuatri 2\Machine Learning\Machine_Learning\Homework_3\doc\img}
+
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{gray!10},   % Color de fondo leve
+	commentstyle=\color{green!40!black},
+	keywordstyle=\color{blue},
+	stringstyle=\color{purple},
+	basicstyle=\ttfamily\footnotesize, % Fuente de monoespacio pequeña
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    % Números de línea a la izquierda
+	numbersep=5pt,                   
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+\lstset{style=mystyle}
+
+\begin{document}
+	
+	\maketitle
+	\thispagestyle{empty}
+	\pagenumbering{arabic}
+	
+	\begin{abstract}
+		
+	\end{abstract}
+	
+	\section*{Problem 1}
+	MLE for the Poisson distribution
+	\newline
+	The Poisson pmf is defined as
+	
+	\begin{equation}
+		p(x|\lambda) = e^{-\lambda}\frac{\lambda^x}{x!}
+	\end{equation}
+	for x $\in${0,1,2,3,...} where $\lambda > 0$. Derive the MLE.
+	
+	\subsection*{Answer}
+	We can write the MLE as follows
+	\begin{equation}
+		\mathcal{L}(\lambda) = \sum_{i=1}^{n} log(e^{-\lambda}\frac{\lambda^{x_i}}{x_i!})
+	\end{equation}
+	Applying log properties for fractions and multiplication we can rewrite it as follows
+	\begin{equation}
+		\mathcal{L}(\lambda) = \sum_{i=1}^{n} log(e^{-\lambda}) + \sum_{i=1}^{n}log(\lambda^{x_i}) - \sum_{i=1}^{n}log(x_i!)
+	\end{equation}
+	Applying exponential properties on logarithms we have...
+	\begin{equation}
+		\mathcal{L}(\lambda) = \sum_{i=1}^{n}-\lambda + \sum_{i=1}^{n}x_ilog(\lambda) - \sum_{i=1}^{n}log(x_i!)
+	\end{equation}
+	The first term we can rewrite it as a simple multiplication due the fact that we don't have an iterative variable there. The log on the second term can be moved outside the sum because it's a constant.
+	\begin{equation}
+		\mathcal{L}(\lambda) = -\lambda n + log(\lambda)\sum_{i=1}^{n}x_i - \sum_{i=1}^{n}log(x_i!)
+	\end{equation}
+	Doing the partial derivation respect $\lambda$ we have:
+	\begin{equation}
+		\frac{\partial \mathcal{L}(\lambda)}{\partial \lambda} = -n + \frac{1}{\lambda} \sum_{i=1}^{n} x_i - 0
+	\end{equation}
+	Equaling to zero
+	\begin{equation}
+		-n + \frac{1}{\lambda} \sum_{i=1}^{n} x_i = 0
+	\end{equation}
+	Clearing for lambda, and due it´s the optimal value we can write it as follows
+	\begin{equation}
+		\hat{\lambda} = \frac{1}{n} \sum_{i=1}^{n} x_i
+	\end{equation}
+	\begin{equation}
+		\hat{\lambda} = \bar{x}
+	\end{equation}
+	
+	\section*{Problem 2}
+	A lifetime X of a machine is modeled by an exponential distribution with
+	unknown parameter $\theta$. The likehood is $p(x|\theta) = \theta e^{- \theta x}$ for $x \geq 0, \theta > 0$.
+	\begin{itemize}
+		\item [(a)] Find MLE.
+		\item [(b)] Assume that an expert belives $\theta$ should have a prior distribution that is also exponential
+		.\begin{equation}
+			p (\theta) = \lambda \exp({-\lambda \theta})
+		\end{equation}
+		Choose the prior parameter, call it $\hat{\lambda}$ such that $E [\theta] = \frac{1}{3}$. Hint: recall that Gamma distribution has the form
+		\begin{equation}
+			Ga(\theta|a,b) \alpha \theta^{\alpha -1} e^{-\theta b}
+		\end{equation}
+		and its mean is a/b.
+		\begin{itemize}
+			\item [i]. What is the posterior $p (\theta|D,\hat{\lambda})$?
+			\item [ii]. What is the posterior $E [\theta|D,\hat{\lambda}]$?
+			\item [iii]. Explain why the MLE and posterior mean differ.
+		\end{itemize}
+	\end{itemize}
+	
+	\subsection*{Answer}
+	\begin{itemize}
+		\item [\textbf{(a)}]
+		We have the MLE equation as follows
+		\begin{equation}
+			\mathcal{L} (\theta) = \sum_{i=1}^{n} log(\theta e^{-\theta x_i})
+		\end{equation}
+		Applying some log properties we have
+		\begin{equation}
+			\mathcal{L} (\theta) = \sum_{i=1}^{n} log(\theta) + \sum_{i=1}^{n} -\theta x_i log(e)
+		\end{equation}
+		\begin{equation}
+			\mathcal{L} (\theta) = n log(\theta) - \theta\sum_{i=1}^{n} x_i
+		\end{equation}
+		Deriving with respect to $\theta$
+		\begin{equation}
+			\frac{\partial\mathcal{L}(\theta)}{\partial\theta} = \frac{n}{\theta} - \sum_{i=1}^{n} x_i
+		\end{equation}
+		Equating the equation to zero and solving for $\theta$
+		\begin{equation}
+			\frac{n}{\theta} = \sum_{i=1}^{n} x_i
+		\end{equation}
+		\begin{equation}
+			\hat{\theta} = \frac{n}{\sum_{i=1}^{n} x_i}
+		\end{equation}
+		\begin{equation}
+			\hat{\theta} = \frac{1}{\bar{x}}
+		\end{equation}
+		\item [\textbf{(b)}]
+		\begin{itemize}
+			\item [i.] To solve this, we need to remember that a property from a exponential distribution is that the expected value (E) is equal to $\frac{1}{\lambda}$, then, we can say the following to calculate $\hat{\lambda}$
+			
+			\begin{equation}
+				E[\theta] = \frac{1}{3} = \frac{1}{\lambda} =\frac{a}{b}
+			\end{equation}
+			\begin{equation}
+				\hat{\lambda} = 3
+			\end{equation}
+			Substituting $\lambda$ on the prior we have
+			\begin{equation}
+				p(\theta) = 3e^{-3\theta}
+			\end{equation}
+			We know that the posterior has the form as follows
+			\begin{equation}
+				p(\theta|x) = \frac{p(x|\theta) * p(\theta)}{p(x)}
+			\end{equation}
+			Substituting values we have
+			\begin{equation}
+				p(\theta|D,\hat{\lambda}) = \frac{\theta^n e^{- \theta\sum_{i=1}^{n}x_i} * 3e^{-3\theta}}{p(x)}
+			\end{equation}
+			\begin{equation}
+				p(\theta|D,\hat{\lambda}) = \frac{3\theta^n e^{- \theta (\sum_{i=1}^{n} x_i + 3)}}{p(x)}
+			\end{equation}
+			p(x) is the marginal probability of x, and it's used to normalize the distribution data, so we can calculate it or not, it depends if we want it normalized it or not. If we don´t normalize the data then we have the following proportion
+			\begin{equation}
+				p(\theta|D,\hat{\lambda}) \alpha \theta^n e^{- \theta (\sum_{i=1}^{n} x_i + 3)}
+			\end{equation}
+			If we look closely, we can note that it has the form of the Gamma distribution, so we can say that the prior without the normalization is a Gamma distribution like this
+			\begin{equation}
+				Ga(\theta|n+1, \sum_{i=1}^{n} x_i + 3)
+			\end{equation}
+			If we want to normalize it, we need to calculate p(x) as follows
+			\begin{equation}
+				p(x) = \int_{0}^{\infty} p(x|\theta) * p(\theta) d\theta
+			\end{equation}
+			\begin{equation}
+				p(x) = \int_{0}^{\infty} \theta^n e^{- \theta (\sum_{i=1}^{n}x_i + 3)}
+			\end{equation}
+			To facilitate the calculation, the integration of a gamma distribution can be writed like this
+			\begin{equation}
+				\int_{0}^{\infty} \theta^{a - 1} e^{-b\theta} d\theta = \frac{\Gamma(a)}{b^a}
+			\end{equation}
+			We have that $\theta^n = \theta^{a - 1}$, $n=a-1$ and $b=\sum_{i=1}^{n} x_i + 3$.
+			
+			Substituting we have
+			\begin{equation}
+				\int_{0}^{\infty} \theta^n e^{- \theta (\sum_{i=1}^{n}x_i + 3)} = 3[\frac{\Gamma(n+1)}{(\sum_{i=1}^{n}x_i + 3)^{n+1}}]
+			\end{equation}
+			Replacing equation 30 on 24, we have the normalized distribution as 
+			\begin{equation}
+				p(\theta|D,\hat{\lambda}) = \frac{\theta^n e^{- \theta (\sum_{i=1}^{n} x_i + 3)} * \sum_{i=1}^{n}(x_i + 3)^{n+1}}{\Gamma(n+1)}
+			\end{equation}
+			Which is equal to the form
+			\begin{equation}
+				Ga(\theta|a,b)= \frac{b^a}{\Gamma(a)} \theta^{a-1} e^{-b\theta}
+			\end{equation}
+			So in conclusion, we can have the equation 25 and 26 without the normalization, and equation 31 with normalization.
+			
+			\item [ii.]
+			We know by definition the following for the expected value
+			\begin{equation}
+				E[\theta] = \frac{1}{3} = \frac{a}{b} = \frac{1}{\lambda}
+			\end{equation}
+			So, if we want to know the expected value of the posterior, we can just substitute a and b (we found them on i.). Doing that, we can rewrite the equation as bellow
+			
+			\begin{equation}
+				E[\theta|D, \hat{\lambda}] = \frac{n + 1}{\sum_{i=1}^{n} x_i + 3}
+			\end{equation}
+			
+			\item [iii.]
+			The MLE and the posterior mean differ, because the MLE depends only on the observed data, and the posterior mean includes the the external information from the expert (the prior and the the believe that the mean was $\frac{1}{3}$). In this case, we can see the prior as an augmented data.
+			
+			If we increase the data to infinite ($n \to \infty$) we can see that at some point the $+1$ on the numerator and the $+3$ on the denominator are insignificant on the calculation, and then we have the same expression on the MLE and the posterior mean.
+		\end{itemize}
+	\end{itemize}
+	
+	\section*{Problem 3}
+	Let $\theta$, x be two jointly distributed random variables. Let also the function (regressor)
+	\begin{equation}
+		f(\theta) = E[x|\theta]
+	\end{equation}
+	Show that under the conditions $\sum_{n=1}^{\infty} \mu_n = \infty$ and $\sum_{n=1}^{\infty} \mu_n^2 < \infty$, the recursion:
+	\begin{equation}
+		\theta_n = \theta_{n-1} - \mu_nx_n
+	\end{equation}
+	converges in probability to a root of $f(\theta)$.
+	
+	\subsection*{Answer}
+	This seems to the Robbins-Monro theorem, where we want to calculate the root from a equation of expected value $M (\omega) = \alpha$, this means, the point where $\alpha = 0$ (in our case, $\omega$ is $\theta$).
+	
+	This means, we want 
+	\begin{equation}
+		f(\theta) = E[x|\theta] = M(\theta) = 0
+	\end{equation}
+	On the Robbins-Monro theorem, they say we can converge to the root using a recursion function as follows.
+	\begin{equation}
+		w_{n+1} = w_n + \mu_n(\alpha - y_n)
+	\end{equation}
+	If we adapt it to our data, where $w \rightarrow \theta$, $y \rightarrow x$, y $\alpha = 0$ we can write 
+	\begin{equation}
+		\theta_n = \theta_{n-1} - \mu_nx_n
+	\end{equation}
+	The theorem establishes that the convergence only happens when the size of $\mu_n$ is restricted at
+	\begin{equation}
+		\sum_{n=1}^{\infty} \mu_n = \infty \quad \text{and} \quad \sum_{n=1}^{\infty} \mu_n^2 < \infty
+	\end{equation}
+	And we know by definition of the problem that this restrictions are accomplished. With this, we know now that the root can be found with the stochastic convergence of the root of $f(\theta)$.
+	
+\end{document}

@@ -1,0 +1,425 @@
+\documentclass[conference, onecolumn]{IEEEtran}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{captdef}
+\usepackage{float}
+\usepackage{bm}
+\usepackage{anyfontsize}
+\usepackage{enumerate}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{attachfile}
+\author{Edwing Alexis Casillas Valencia\\
+	\today}
+\title{Homework II - Introduction to Machine Learning}
+%\date{October 7 2025}
+\graphicspath{C:\Users\Narut\OneDrive\Documentos\Maestria\Cuatri 2\Machine Learning\Machine_Learning\Homework_2\doc\img}
+
+\lstdefinestyle{mystyle}{
+	backgroundcolor=\color{gray!10},   % Color de fondo leve
+	commentstyle=\color{green!40!black},
+	keywordstyle=\color{blue},
+	stringstyle=\color{purple},
+	basicstyle=\ttfamily\footnotesize, % Fuente de monoespacio pequeña
+	breakatwhitespace=false,         
+	breaklines=true,                 
+	captionpos=b,                    
+	keepspaces=true,                 
+	numbers=left,                    % Números de línea a la izquierda
+	numbersep=5pt,                   
+	showspaces=false,                
+	showstringspaces=false,
+	showtabs=false,                  
+	tabsize=2
+}
+\lstset{style=mystyle}
+
+\begin{document}
+	\maketitle
+	\thispagestyle{empty}
+	\pagenumbering{arabic}
+	\begin{abstract}
+		
+	\end{abstract}
+	In this assignment, the goal is the implementation of the linear regression, building the model using the canonical form and the gradient descent step. Also we want to implement thye Cholenky decomposition.
+	\section*{\textbf{Practical}}
+	\section*{Problem 1}
+	Given the following data set
+	\begin{itemize}
+		\item https://dev.mysql.com/doc/employee/en/employees-installation.html
+	\end{itemize}
+	\begin{enumerate}
+		\item [(a)] Given a of the people and its salary, extract information into a pandas data frame using by pulling
+		\begin{enumerate}
+			\item[i.] End Data
+			\item[ii.] Salary
+		\end{enumerate}
+		\item [(b)] Generate a simple Linear Regression (Which needs to be programmed using Jax) to estimate given a title, anyone you want, to say the salary of a person in 2025.
+		\begin{enumerate}
+			\item[i.] Using the canonical Version
+		\end{enumerate}
+	\end{enumerate}
+	
+	\subsection*{Answer}
+	\begin{enumerate}
+		\item[(a)] Solved on canonical.py
+		\item[(b)] Solved on canonical.py
+	\end{enumerate}
+	
+	\section*{Problem 2}
+	Implement the regularized version of the following equation
+	\begin{equation}
+		L(w) = \sum_{i=1}^{N} (yi-x_i^Tw)^2 + \lambda\sum_{i=1}^{d+1} w_i^2
+	\end{equation}
+	\begin{enumerate}
+		\item[(a)] Give me the $\Delta L(w)$ of gradient descent by deriving the function $L(w)$. Here is the the function:
+		\begin{equation}
+			\omega_{t+1} = \omega_t - \eta\Delta L(\omega_t)
+		\end{equation}
+		\item[(b)] Implement the gradient descent step size without using the operation grad at Jax using the previous information.
+		\item[(c)] Answer the problem using this new model.
+		\item[(d)] Use a search grid on $\lambda$ to obtain the best lambda for it.
+	\end{enumerate}
+	
+	\subsection*{Answer}
+	\begin{enumerate}
+		\item[(a)] \begin{equation}
+			L(w) = \|y - Xw\|^2 + \lambda \|w\|^2
+		\end{equation}
+		\begin{equation}
+			L(w) = (y - Xw)^T (y - Xw) + \lambda w^T w
+		\end{equation}
+		\begin{equation}
+			L(w) = y^T y - y^T (Xw) - (Xw)^T y + (Xw)^T (Xw) + \lambda w^T w
+		\end{equation}
+		\begin{equation}
+			L(w) = y^T y - 2y^T X w + w^T X^T X w + \lambda w^T w
+		\end{equation}
+		\begin{equation}
+			\frac{\partial L(w)}{\partial w} = \frac{\partial (y^T y)}{\partial w} - \frac{\partial (2y^T X w)}{\partial w} + \frac{\partial (w^T X^T X w)}{\partial w} + \frac{\partial (\lambda w^T w)}{\partial w}
+		\end{equation}
+		\begin{equation}
+			\frac{\partial L(w)}{\partial w} = 0 - 2X^T y + 2X^T X w + 2\lambda w
+		\end{equation}
+		\begin{equation}
+			\frac{\partial L(w)}{\partial w} = -2X^T (y - Xw) + 2\lambda w
+		\end{equation}
+		\begin{equation}
+			\Delta L(w_t) = -2X^T (y - Xw) + 2\lambda w
+		\end{equation}
+		\begin{equation}
+			w_{(t+1)} = w_t - \alpha (-2X^T (y - X w_t) + 2\lambda w_t)
+		\end{equation}
+		\item[(b)] Solved on gradient\_descent.py
+		\item[(c)] Solved on gradient\_descent.py
+		\item[(d)] Solved on gradient\_descent.py
+	\end{enumerate}
+	
+	
+	\section*{Problem 3}
+	We have been looking at the Logistic Model form
+	\begin{equation}
+		L(x1,...,x_N|\theta) = log \prod_{i=1}^{N} \prod_{l=1}^{K} p(x_i|\omega_l)^{I(x_i \in \omega_l)}
+	\end{equation}
+	Although its power is somewhat limited, we can still have fun with it by going beyond the canonical solution. Take a look at the jupyter notebook provided for you at
+	\begin{itemize}
+		\item https://github.com/kajuna0amendez/Class\_MachineLearning\_Jax/tree/main/notebook/Class\_05
+	\end{itemize}
+	There you have a Jax canonical logistic implementation.
+	\begin{enumerate}
+		\item[(a)] You need to implement:
+		\begin{itemize}
+			\item[i.] The Cholensky Decomposition method for the Logistic Regression
+		\end{itemize}
+		\item[(b)] And given the data set
+		\begin{itemize}
+			\item (Instructions to load it are being provided)
+		\end{itemize}
+		You will compare the classic and Cholensky algorithms convergency rates as the one show in the figure:
+		\begin{center}
+			\includegraphics[scale=0.7]{img/chol.png}
+		\end{center}
+	\end{enumerate}
+	
+	\subsection*{Answer}
+	
+	\section*{Theoretical}
+	\section*{Problem 1}
+	Argue that in the case of simple linear regression, the least squares line always passes through the point $(\bar{x}, \bar{y})$. Here,
+	\begin{enumerate}
+		\item[(a)] $\bar{x} = \frac{1}{N} \sum_{i=1}^{N} x_i, \bar{y} = \frac{1}{N} \sum_{i=1}^{N} y_i$
+		\item[(b)] And $\hat{y_i} = g(x_i) + \in$. Hint argue that $\sum_{i=1}^{N} \in = 0$
+	\end{enumerate}
+	
+	\subsection*{Answer}
+	\begin{enumerate}
+		\item[(a)] We know that \begin{equation}
+			\hat{y} = \hat{\beta}_0 + \sum_{i=1}^{N} x_i \hat{\beta}_i
+		\end{equation}
+		Then \begin{equation}
+			RSS(\beta) = \sum_{i=1}^{N} \left( y_i - \hat{\beta}_0 - \sum_{j=1}^{p} x_{ij} \hat{\beta}_j \right)^2
+		\end{equation}
+		If we asume that p=1 we have \begin{equation}
+			RSS(\beta) = \sum_{i=1}^{N} (y_i - \hat{\beta}_0 - x_i \hat{\beta}_1)^2
+		\end{equation}
+		Then we minimize RSS deriving $\hat{\beta}_0$ and set equal to 0
+		\begin{equation}
+		\frac{\partial RSS(\beta)}{\partial \hat{\beta}_0} = \frac{\partial (\sum_{i=1}^{N} (y_i - \hat{\beta}_0 - x_i \hat{\beta}_1)^2)}{\partial \hat{\beta}_0}
+		\end{equation}
+		\begin{equation}
+			\frac{\partial RSS(\beta)}{\partial \hat{\beta}_0} = -2 \sum_{i=1}^{N} (y_i - \hat{\beta}_0 - x_i \hat{\beta}_1) = 0
+		\end{equation}
+		\begin{equation}
+			\sum_{i=1}^{N} (y_i - \hat{\beta}_0 - x_i \hat{\beta}_1) = 0
+		\end{equation}
+		\begin{equation}
+			\sum_{i=1}^{N} y_i - \sum_{i=1}^{N} \hat{\beta}_0 - \sum_{i=1}^{N} x_i \hat{\beta}_1 = 0
+		\end{equation}
+		\begin{equation}
+			\sum_{i=1}^{N} y_i - N \hat{\beta}_0 - \hat{\beta}_1 \sum_{i=1}^{N} x_i = 0
+		\end{equation}
+		From the problem we have
+		\begin{equation}
+			\bar{x} = \frac{1}{N} \sum_{i=1}^{N} x_i \rightarrow N\bar{x} = \sum_{i=1}^{N} x_i
+		\end{equation}
+		\begin{equation}
+			\bar{y} = \frac{1}{N} \sum_{i=1}^{N} y_i \rightarrow N\bar{y} = \sum_{i=1}^{N} y_i
+		\end{equation}
+		Substituting...
+		\begin{equation}
+			N\bar{y} - N\hat{\beta}_0 - \hat{\beta}_1 N\bar{x} = 0
+		\end{equation}
+		\begin{equation}
+			N(\bar{y} - \hat{\beta}_0 - \hat{\beta}_1 \bar{x}) = 0
+		\end{equation}
+		\begin{equation}
+			\bar{y} - \hat{\beta}_0 - \hat{\beta}_1 \bar{x} = 0
+		\end{equation}
+		\begin{equation}
+			\bar{y} = \hat{\beta}_0 + \hat{\beta}_1 \bar{x}
+		\end{equation}
+		
+		\item[(b)] We know that \begin{equation}
+			\hat{y} = \hat{\beta}_0 + \sum_{i=1}^{N} x_i \hat{\beta}_i + \epsilon
+		\end{equation}
+		\begin{equation}
+			\epsilon = \hat{y} - (\hat{\beta}_0 + \sum_{i=1}^{N} x_i \hat{\beta}_i)
+		\end{equation}
+		\begin{equation}
+			\epsilon = \hat{y} - (\hat{\beta}_0 + x_i \hat{\beta}_1) = \hat{y} - \hat{\beta}_0 - x_i \hat{\beta}_1
+		\end{equation}
+		\begin{equation}
+			\sum_{i=1}^{N} (y_i - \hat{\beta}_0 - x_i \hat{\beta}_1) = 0
+		\end{equation}
+		\begin{equation}
+			\sum_{i=1}^{N} \epsilon_i = 0
+		\end{equation}
+	\end{enumerate}
+	
+	\section*{Problem 2}
+	Prove that he $R^2$ statistic is equal to the square of the correlation between X and Y . For simplicity, you may assume that $\bar{x} = \bar{y} = 0$.
+	\subsection*{Answer}
+	Our lineal regression model is as follows
+	\begin{equation}
+		\hat{y_i} = x_i\hat{\beta}_i
+	\end{equation}
+	\begin{equation}
+		RSS(\beta) = \sum_{i=1}^{N} \left( y_i - x_{i} \hat{\beta} \right)^2
+	\end{equation}
+	\begin{equation}
+		\frac{\partial RSS(\beta)}{\partial \hat{\beta}} = \frac{\partial (\sum_{i=1}^{N} (y_i - x_i \hat{\beta})^2)}{\partial \hat{\beta}}
+	\end{equation}
+	\begin{equation}
+		\frac{\partial RSS(\beta)}{\partial \hat{\beta}} = -2 \sum_{i=1}^{N} x_i (y_i - x_i \hat{\beta}) = 0
+	\end{equation}
+	Solving for $\beta$
+	\begin{equation}
+		\sum_{i=1}^{N} x_i y_i - \hat{\beta} \sum_{i=1}^{N} x_i^2 = 0
+	\end{equation}
+	\begin{equation}
+		\hat{\beta} = \frac{\sum_{i=1}^{N} x_i y_i}{\sum_{i=1}^{N} x_i^2}
+	\end{equation}
+	Defining $R^2$
+	\begin{equation}
+		R^2 = \frac{SSR}{SST}
+	\end{equation}
+	where
+	\begin{equation}
+		SST = \sum_{i=1}^{N} (y_i - \bar{y})^2, SSR = \sum_{i=1}^{N} (\hat{y}_i - \bar{y})^2
+	\end{equation}
+	since $\bar{x} = \bar{y} = 0$
+	\begin{equation}
+		SST = \sum_{i=1}^{N} (y_i - \bar{y})^2 = \sum_{i=1}^{N} y_i^2
+	\end{equation}
+	and
+	\begin{equation}
+		SSR = \sum_{i=1}^{N} (\hat{y}_i - \bar{y})^2 = \sum_{i=1}^{N} \hat{y}_i^2 = \sum_{i=1}^{N} (x_i \hat{\beta}_i)^2 = \hat{\beta}_i^2 \sum_{i=1}^{N} x_i^2
+	\end{equation}
+	then
+	\begin{equation}
+		R^2 = \frac{\hat{\beta}_i^2 \sum_{i=1}^{N} x_i^2}{\sum_{i=1}^{N} y_i^2}
+	\end{equation}
+	Substituting on $\hat{\beta_i}$
+	\begin{equation}
+		R^2 = \frac{(\frac{\sum_{i=1}^{N} x_i y_i}{\sum_{i=1}^{N} x_i^2})^2 \sum_{i=1}^{N} x_i^2}{\sum_{i=1}^{N} y_i^2} = \frac{\frac{(\sum_{i=1}^{N} x_i y_i)^2}{(\sum_{i=1}^{N} x_i^2)^2} \sum_{i=1}^{N} x_i^2}{\sum_{i=1}^{N} y_i^2} = \frac{\frac{(\sum_{i=1}^{N} x_i y_i)^2}{\sum_{i=1}^{N} x_i^2}}{\sum_{i=1}^{N} y_i^2} = \frac{(\sum_{i=1}^{N} x_i y_i)^2}{\sum_{i=1}^{N} x_i^2 \sum_{i=1}^{N} y_i^2}
+	\end{equation}
+	And knowing that the Pearson correlation coefficient between x and y to $\bar{x} = \bar{y} = 0$ is
+	\begin{equation}
+		r_{xy} = \frac{\sum_{i=1}^{N} x_i y_i}{\sqrt{\sum_{i=1}^{N} x_i^2 \sum_{i=1}^{N} y_i^2}}
+	\end{equation}
+	\begin{equation}
+		r_{xy}^2 = (\frac{\sum_{i=1}^{N} x_i y_i}{\sqrt{\sum_{i=1}^{N} x_i^2 \sum_{i=1}^{N} y_i^2}})^2 = \frac{(\sum_{i=1}^{N} x_i y_i)^2}{\sum_{i=1}^{N} x_i^2 \sum_{i=1}^{N} y_i^2}
+	\end{equation}
+	We have then
+	\begin{equation}
+		R^2 = r_{xy}^2
+	\end{equation}
+	
+	\section*{Problem 3}
+	Carefully explain the differences between the KNN classifier and KNN regression methods.
+	
+	\subsection*{Answer}
+	The difference lies in the nature of the output and the aggregation method used to combine the neighbor information.
+	
+	Although both identify the k points closest to a query point x using a Euclidean distance metric, each differs in its application.
+	\begin{itemize}
+		\item \textbf{KNN Classification}
+		\begin{itemize}
+			\item It uses a "voting" system, which returns the label with the highest frequency among the k nearest neighbors. This can be likened to calculating the proportion of a class in the neighborhood and assigning the class if a certain threshold is exceeded.
+			\item The output is discrete or categorical.
+			\item In high dimensions, the bias-variance balance is better than in regression.
+			\item The interpretation corresponds to a tessellation.
+		\end{itemize}
+		
+		\item \textbf{KNN regression}
+		\begin{itemize}
+			\item It uses the average, that is, it returns the average value of the labels of the k nearest neighbors.
+			\item The output is continuous.
+			\item In high dimensions, the bias-variance balance is not very good.
+			\item It can have a tessellation interpretation, but it's not very good.
+		\end{itemize}
+	\end{itemize}
+	While KNN classification seeks to identify which group a point belongs to based on the majority of its neighbors, the KNN regression seeks to estimate a numerical value by averaging the values of its surroundings.
+	
+	\section*{Problem 4}
+	Approximating a vector as a multiple of another one. In the special case n = 1, the general least squares	problem reduces to finding a scalar x that minimizes $||ax-b||^2$ where a and b are d-vectors. We write the	matrix A here in lower case, since it is an d-vector.
+	\begin{enumerate}
+		\item[(a)] Assuming a and b are nonzero, show that $||a\hat{x} - b||^2 = ||b|| sin \theta. \theta$ is the angle between a and b.
+	\end{enumerate}
+	This shows that the optimal relative error in approximating one vector by a multiple of another one depends	on their angle.
+	\subsection*{Answer}
+	We want to desmostrate that the general least squares reduces to finding a scalr x that minimize $||ax-b||^2$, then:
+	\begin{equation}
+		\min_{x \in \mathbb{R}} f(x) = \|ax - b\|^2 = (ax - b)^T (ax - b)
+	\end{equation}
+	\begin{equation}
+		\min_{x \in \mathbb{R}} f(x) = (ax)^T ax - (ax)^T b - b^T ax + b^T b
+	\end{equation}
+	due x is a scalar
+	\begin{equation}
+		\min_{x \in \mathbb{R}} f(x) = x^2 (a^T a) - x(a^T b) - x(b^T a) + b^T b
+	\end{equation}
+	and $(a^Tb) = (b^Ta)$
+	\begin{equation}
+		\min_{x \in \mathbb{R}} f(x) = x^2 (a^T a) - 2x(a^T b) + b^T b
+	\end{equation}
+	Deriving x...
+	\begin{equation}
+		\frac{\partial f(x)}{\partial x} = \frac{\partial (x^2 (a^T a) - 2x(a^T b) + b^T b)}{\partial x}
+	\end{equation}
+	\begin{equation}
+		\frac{\partial f(x)}{\partial x} = \frac{\partial (x^2 (a^T a))}{\partial x} - \frac{\partial (2x(a^T b))}{\partial x} + \frac{\partial (b^T b)}{\partial x}
+	\end{equation}
+	\begin{equation}
+		\frac{\partial f(x)}{\partial x} = 2x(a^T a) - 2(a^T b) = 0
+	\end{equation}
+	\begin{equation}
+		2x(a^T a) = 2(a^T b)
+	\end{equation}
+	\begin{equation}
+		\hat{x} = \frac{2(a^T b)}{2(a^T a)} = \frac{(a^T b)}{(a^T a)} = \frac{(a^T b)}{\|a\|^2}
+	\end{equation}
+	Geometrically we know that $a\hat{x}$ is the orthogonal projection of b into a, so we have:
+	\begin{equation}
+		proy_a(b) = a \frac{(a^T b)}{\|a\|^2}
+	\end{equation}
+	\begin{equation}
+		proy_a(b) = a \hat{x}
+	\end{equation}
+	\begin{equation}
+		f(\hat{x}) = \|a\hat{x} - b\|^2 = \|proy_a(b) - b\|^2
+	\end{equation}
+	By Pythagoras
+	\begin{equation}
+		\|b\|^2 = \|proy_a(b)\|^2 + \|proy_a(b) - b\|^2
+	\end{equation}
+	\begin{equation}
+		\|proy_a(b)\| = \left| \frac{a^T b}{\|a\|^2} \right| \|a\| = \frac{|a^T b|}{\|a\|} = \|b\| |\cos \theta|
+	\end{equation}
+	\begin{equation}
+		\|proy_a(b)\|^2 = \|b\|^2 \cos^2 \theta
+	\end{equation}
+	\begin{equation}
+		\|b\|^2 = \|b\|^2 \cos^2 \theta + \|a\hat{x} - b\|^2
+	\end{equation}
+	\begin{equation}
+		\|a\hat{x} - b\|^2 = \|b\|^2 - \|b\|^2 \cos^2 \theta = \|b\|^2 (1 - \cos^2 \theta) = \|b\|^2 \sin^2 \theta
+	\end{equation}
+	\begin{equation}
+		\|a\hat{x} - b\|^2 = \|b\|^2 \sin^2 \theta
+	\end{equation}
+	
+	\section*{Problem 5}
+	Suppose the m × n matrix A has linearly independent columns, and b is an d-vector. Let $\hat{x} = (A^TA)^{-1}A^Tx$ denote the least squares approximate solution of $Ax = b$.
+	\begin{enumerate}
+		\item[(a)] Show that for any d-vector x, $(Ax)^Tb=(Ax)^T(A\hat{x})$.
+		\item[(b)] Least angle property of least squares. The choice $x = \hat{x}$ minimizes the distance between Ax and b. Show that $x = \hat{x}$ also minimizes the angle between Ax and b. (You can assume that Ax and b are nonzero.) For any positive scalar $\alpha$.
+	\end{enumerate}
+	
+	\subsection*{Answer}
+	\begin{enumerate}
+		\item[(a)] We know that the orthogonal projection of b onto Aa is:
+		\begin{equation}
+			\hat{y} = A\hat{x} = A(A^T A)^{-1} A^T b
+		\end{equation}
+		\begin{equation}
+			(b - A\hat{x})^T (Ax) = 0
+		\end{equation}
+		\begin{equation}
+			b^T Ax - (A\hat{x})^T (Ax) = 0
+		\end{equation}
+		\begin{equation}
+			b^T Ax = (A\hat{x})^T (Ax)
+		\end{equation}
+		Due we are working with scalars, we can have something like this
+		\begin{equation}
+			(Ax)^Tb = (Ax)^T(A\hat{x})
+		\end{equation}
+		
+		\item[(b)] 
+		\begin{equation}
+			\cos \theta(x) = \frac{(Ax)^T b}{\|Ax\|\|b\|}
+		\end{equation}
+		\begin{equation}
+			\cos \theta(x) = \frac{(Ax)^T (A\hat{x})}{\|Ax\|\|b\|}
+		\end{equation}
+		\begin{equation}
+			(Ax)^T (A\hat{x}) \le \|Ax\|\|A\hat{x}\|
+		\end{equation}
+		\begin{equation}
+			\cos \theta(x) \le \frac{\|Ax\|\|A\hat{x}\|}{\|Ax\|\|b\|} = \frac{\|A\hat{x}\|}{\|b\|}
+		\end{equation}
+		\begin{equation}
+			\cos \theta(\hat{x}) = \frac{(A\hat{x})^T (A\hat{x})}{\|A\hat{x}\|\|b\|} = \frac{\|A\hat{x}\|^2}{\|A\hat{x}\|\|b\|} = \frac{\|A\hat{x}\|}{\|b\|}
+		\end{equation}
+		\begin{equation}
+			\cos \theta(x) \le \cos \theta(\hat{x})
+		\end{equation}
+	\end{enumerate}
+	
+	
+\end{document}
