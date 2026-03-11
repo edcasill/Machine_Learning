@@ -3,10 +3,11 @@ import jax
 from jax import jit, random
 import jax.numpy as jnp
 from functools import partial
+import jax.scipy.stats as jstats
 import time
 
 
-class logistic:
+class em_algorithm:
     """
     Basic Model + Quasi Newton Methods
     """
@@ -183,3 +184,15 @@ class logistic:
         f1_score = 2 * (precision * recall) / jnp.maximum(precision + recall, 1e-9)
 
         return precision.tolist(), recall.tolist(), accuracy.tolist(), f1_score.tolist()
+
+    @jit
+    def expectation_step(self, X, pi, mu, sigma):
+        """
+        Calculate responsibilities 
+        """
+        log_pdf1 = jstats.multivariate_normal.logpdf(X, mu[0], sigma[0])
+        log_pdf2 = jstats.multivariate_normal.logpdf(X, mu[1], sigma[1])
+
+        log_P = jnp.column_stack([log_pdf1, log_pdf2])
+
+        log_P_weighted = log_P + jnp.log(pi)  # numerator on the equation
