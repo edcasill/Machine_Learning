@@ -196,3 +196,21 @@ class em_algorithm:
         log_P = jnp.column_stack([log_pdf1, log_pdf2])
 
         log_P_weighted = log_P + jnp.log(pi)  # numerator on the equation
+
+        # denominator
+        # logsumexp cambia los datos para que no exista un underflow de datos, ademas de trabajar
+        # con la loglikelihood
+        log_P_evidence = jax.scipy.special.logsumexp(log_P_weighted, axis=1, keepdims=True)
+
+        gamma = log_P_weighted - log_P_evidence
+        gamma = jnp.exp(gamma)
+        return gamma
+    
+    @jit
+    def maximization_step(self, X, gamma):
+        """
+        Compute the weighted means and variances
+        """
+        
+        new_pi = gamma / N
+        mu1_hat = ((1 - gamma) * X) / (1 - gamma)
