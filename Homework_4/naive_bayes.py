@@ -22,8 +22,8 @@ class naive_bayes():
 
         # discriminants
         # g_k(x) = ln(pi_k) + ln(N(x | mu_k, sigma_diag_k))
-        g_1 = log_pi_l + jstats.multivariate_normal.logpdf(self.X[0], self.mu_l[0], self.sigma_1)
-        g_2 = log_pi_k + jstats.multivariate_normal.logpdf(self.X[1], self.mu_l[1], self.sigma_2)
+        g_1 = log_pi_l + jstats.multivariate_normal.logpdf(self.X, self.mu_l, self.sigma_1)
+        g_2 = log_pi_k + jstats.multivariate_normal.logpdf(self.X, self.mu_k, self.sigma_2)
 
         # decission rule. If P(w1|x) > P(w2|x) x is classified to w1, If P(w1|x) < P(w2|x) x is classified to w2
         # we get the max value for each
