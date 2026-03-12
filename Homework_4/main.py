@@ -2,9 +2,9 @@ import os
 import pandas as pd
 import jax
 import jax.numpy as jnp
-import em_algorithm
 import jax.scipy.stats as jstats
-from jax import jit
+import em_algorithm
+import naive_bayes
 
 
 def generate_r2_gaussian(alpha, samples, seed=73):
@@ -55,6 +55,10 @@ def main():
     print("#"*50)
     print("Covariance (sigma):\n", model_1.sigma)
 
+    pi1 = model_1.pi
+    mu1 = model_1.mu
+    sigma1 = model_1.sigma
+
     print("_"*50)
 
     model_2 = em_algorithm.em_algorithm()
@@ -63,6 +67,10 @@ def main():
     print("Means (mu):\n", model_2.mu)
     print("#"*50)
     print("Covariance (sigma):\n", model_2.sigma)
+
+    pi2 = model_2.pi
+    mu2 = model_2.mu
+    sigma2 = model_2.sigma
 
 
 if __name__ == "__main__":

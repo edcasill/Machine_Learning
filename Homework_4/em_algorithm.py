@@ -1,10 +1,8 @@
-import pandas as pd
 import jax
 from jax import jit, random
 import jax.numpy as jnp
 from functools import partial
 import jax.scipy.stats as jstats
-import time
 
 
 class em_algorithm:
