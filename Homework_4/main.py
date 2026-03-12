@@ -3,8 +3,8 @@ import pandas as pd
 import jax
 import jax.numpy as jnp
 import jax.scipy.stats as jstats
-import em_algorithm
-import naive_bayes
+import em_algorithm as em
+import naive_bayes as NB
 
 
 def generate_r2_gaussian(alpha, samples, seed=73):
@@ -47,7 +47,7 @@ def main():
     x_case1, y_case1 = generate_r2_gaussian(alpha_c1, samples)
     x_case2, y_case2 = generate_r2_gaussian(alpha_c2, samples)
 
-    model_1 = em_algorithm.em_algorithm()
+    model_1 = em.em_algorithm()
     model_1.fit_em(x_case1)
 
     print("Parameters calculated by EM:")
@@ -59,9 +59,14 @@ def main():
     mu1 = model_1.mu
     sigma1 = model_1.sigma
 
-    print("_"*50)
+    case1_NB = NB.naive_bayes(pi1, mu1, sigma1, x_case1)
+    case1_NB.model()
+    print(f"Predictions for case 1 is {case1_NB.y_pred}")
 
-    model_2 = em_algorithm.em_algorithm()
+    ##########################################################################
+    print("_"*65)
+
+    model_2 = em.em_algorithm()
     model_2.fit_em(x_case2)
 
     print("Means (mu):\n", model_2.mu)
@@ -71,6 +76,10 @@ def main():
     pi2 = model_2.pi
     mu2 = model_2.mu
     sigma2 = model_2.sigma
+
+    case2_NB = NB.naive_bayes(pi2, mu2, sigma2, x_case2)
+    case2_NB.model()
+    print(f"Predictions for case 2 is {case2_NB.y_pred}")
 
 
 if __name__ == "__main__":

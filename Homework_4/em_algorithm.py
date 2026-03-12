@@ -70,7 +70,7 @@ class em_algorithm:
         # diferent intialization to get the best result
         for em_try in range(n_init):
             # pi: we initialize pi at 0.5, same for both clusters
-            pi = jnp.array([0.5, 0.5]) 
+            pi = jnp.array([0.5, 0.5])
 
             # mu: random points on the dataset, they gonna be the center
             self.key, subkey = jax.random.split(self.key)

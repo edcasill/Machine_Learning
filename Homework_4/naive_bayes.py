@@ -31,3 +31,25 @@ class naive_bayes():
         self.y_pred = jnp.argmax(G, axis=1)
 
         return self
+    
+    def calculate_metrics(self, y, y_hat):
+        """
+        Calculate Precision, Recall and F1-Score for binary clasification
+        """
+        # True Positives
+        TP = jnp.sum((y_hat == 1) & (y == 1))
+
+        # False positives
+        FP = jnp.sum((y_hat == 1) & (y == 0))
+
+        # False Negative
+        FN = jnp.sum((y_hat == 0) & (y == 1))
+        TN = jnp.sum((y_hat == 0) & (y == 0))
+
+        # jnp.maximum avoid zero division
+        precision = TP / jnp.maximum(TP + FP, 1e-9)
+        recall = TP / jnp.maximum(TP + FN, 1e-9)
+        accuracy = (TP + TN) / jnp.maximum(TP + TN + FP + FN, 1e-9)
+        f1_score = 2 * (precision * recall) / jnp.maximum(precision + recall, 1e-9)
+
+        return precision.tolist(), recall.tolist(), accuracy.tolist(), f1_score.tolist()
