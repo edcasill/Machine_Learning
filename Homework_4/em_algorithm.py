@@ -9,159 +9,95 @@ import time
 
 class em_algorithm:
     """
-    Basic Model + Quasi Newton Methods
+    steps 2 to 4 for two-components gaussian mixture
     """
-    def __init__(self, regularization='l2', method_opt='classic_model'):
-        self.regularization = regularization
-        self.method_opt = method_opt
-        self.error_gradient = 0.001
-        self.key = random.PRNGKey(73)
-        self.W = None
-
-    @staticmethod
-    @jit
-    def logistic_exp(W: jnp, X: jnp) -> jnp:
-        """
-        Generate all the w^T@x values
-        args:
-            W is a k-1 x d + 1
-            X is a d x N
-        """
-        z = jnp.clip(W@X, -500.0, 500.0)  # clip data to prevent infinite values
-        return jnp.exp(z)
-
-    @staticmethod
-    @jit
-    def logistic_sum(exTerms: jnp) -> jnp:
-        """
-        Generate all the w^T@x values
-        args:
-            W is a k-1 x d
-            X is a d x N
-        """
-        temp = jnp.sum(exTerms, axis=0)
-        n = temp.shape[0]
-        return jnp.reshape(1.0+temp, (1, n))
-
-    @staticmethod
-    @jit
-    def logit_matrix(Terms: jnp, sum_terms: jnp) -> jnp:
-        """
-        Generate matrix
-        """
-        divisor = 1/sum_terms
-        n, _ = Terms.shape
-        replicate = jnp.repeat(divisor, repeats=n, axis=0)
-        logits = Terms*replicate
-        return jnp.vstack([logits, divisor])
+    def __init__(self, seed=73):
+        self.key = random.PRNGKey(seed)
+        self.pi = None
+        self.mu = None
+        self.sigma = None
 
     @partial(jit, static_argnums=(0,))
-    def model(self, W: jnp, X: jnp, Y_hot: jnp) -> jnp:
+    def expectation_step(self, X, pi, mu, sigma):
         """
-        Logistic Model
+        Calculate responsibilities (step 2)
         """
-        W = jnp.reshape(W, self.sh)
-        terms = self.logistic_exp(W, X)
-        sum_terms = self.logistic_sum(terms)
-        matrix = self.logit_matrix(terms, sum_terms)
-        matrix_safe = jnp.clip(matrix, 1e-15, 1.0)
-        return jnp.sum(jnp.sum(jnp.log(matrix_safe) * Y_hot, axis=0), axis=0)
+        log_pdf1 = jstats.multivariate_normal.logpdf(X, mu[0], sigma[0])
+        log_pdf2 = jstats.multivariate_normal.logpdf(X, mu[1], sigma[1])
 
-    @staticmethod
-    def one_hot(Y: jnp):
-        """
-        One_hot matrix
-        """
-        numclasses = len(jnp.unique(Y))
-        return jnp.transpose(jax.nn.one_hot(Y, num_classes=numclasses))
+        log_P = jnp.column_stack([log_pdf1, log_pdf2])
 
-    def generate_w(self, k_classes: int, dim: int) -> jnp:
-        """
-        Use the random generator at Jax to generate a random generator to instanciate
-        the augmented values
-        """
-        key = random.PRNGKey(0)
-        keys = random.split(key, 1)
-        return jnp.array(random.normal(keys[0], (k_classes, dim)))
+        log_P_weighted = log_P + jnp.log(pi)  # numerator on the equation
 
-    @staticmethod
-    def augment_x(X: jnp) -> jnp:
-        """
-        Augmenting samples of a dim x N matrix
-        """
-        N = X.shape[1]
-        return jnp.vstack([X, jnp.ones((1, N))])
+        # denominator
+        # logsumexp cambia los datos para que no exista un underflow de datos, ademas de trabajar
+        # con la loglikelihood
+        log_P_evidence = jax.scipy.special.logsumexp(log_P_weighted, axis=1, keepdims=True)
 
-    def fit(self, X: jnp, Y: jnp) -> None:
-        """
-        The fit process
-        """
-        nclasses = len(jnp.unique(Y))
-        X = self.augment_x(X)
-        dim = X.shape[0]
-        W = self.generate_w(nclasses-1, dim)
-        Y_hot = self.one_hot(Y)
-        self.W = getattr(self, self.method_opt, lambda W, X, Y_hot: self.error())(W, X, Y_hot)
+        gamma = log_P_weighted - log_P_evidence
+        gamma = jnp.exp(gamma)
+        log_likelihood = jnp.sum(log_P_evidence)
 
-    @staticmethod
-    def error() -> None:
+        return gamma, log_likelihood
+    
+    @partial(jit, static_argnums=(0,))
+    def maximization_step(self, X, gamma):
         """
-        Only Print Error
+        Compute the weighted means and variances (step 3)
         """
-        raise Exception("Opt Method does not exist")
+        N = X.shape[0]
+        sum_gamma = jnp.sum(gamma, axis=0)
+        new_pi = sum_gamma / N
+        # sum_gamma is [2,] if we divide directly, it's going to crash, so we add a second column
+        mu_hat = (gamma.T @ X) / sum_gamma[:,None]
 
-    def classic_model(self, W: jnp, X: jnp, Y_hot: jnp, alpha: float = 1e-2, tol: float = 1e-3) -> jnp:
+        cluster1_to_X = X - mu_hat[0]
+        sigma_1= (cluster1_to_X.T @ (cluster1_to_X * gamma[:, 0:1])) / sum_gamma[0]
+        cluster2_to_X = X - mu_hat[1]
+        sigma_2 = (cluster2_to_X.T @ (cluster2_to_X * gamma[:, 1:2])) / sum_gamma[1]
+        sigma = jnp.stack([sigma_1, sigma_2])
+
+        return new_pi, mu_hat, sigma
+
+    def fit_em(self, X:jnp.ndarray, iterations: int = 100, tolerance: float=1e-4):
         """
-        The naive version of the logistic regression
+        iterate model until convergence (step 4 of algorithm)
         """
-        n, m = W.shape
-        self.sh = (n, m)
-        Grad = jax.grad(self.model, argnums=0)(jnp.ravel(W), X, Y_hot)
-        loss = self.model(jnp.ravel(W), X, Y_hot)
-        cnt = 0
-        while True:
-            Hessian = jax.hessian(self.model, argnums=0)(jnp.ravel(W), X, Y_hot)
+        N, d = X.shape
 
-            # prevents singular
-            mid_hessian = jnp.eye(Hessian.shape[0])
-            Hessian_safe = Hessian + mid_hessian * 1e-5
+        # pi: we initialize pi at 0.5, same for both clusters
+        pi = jnp.array([0.5, 0.5]) 
 
-            step = jnp.linalg.solve(Hessian_safe, Grad)
-            W = W - alpha*jnp.reshape(step, self.sh)
-            Grad = jax.grad(self.model, argnums=0)(jnp.ravel(W), X, Y_hot)
-            old_loss = loss
-            loss = self.model(jnp.ravel(W), X, Y_hot)
+        # mu: random points on the dataset, they gonna be the center
+        self.key, subkey = jax.random.split(self.key)
+        index = jax.random.choice(subkey, jnp.arange(N), shape=(2,), replace=False)
+        mu = X[index]
 
-            if cnt % 30 == 0:
-                time.sleep(0.1)
-            if jnp.abs(old_loss - loss) < tol:
+        # sigma: we initialize identity matrix for both sigmas
+        sigma = jnp.stack([jnp.eye(d), jnp.eye(d)])
+
+        log_likelihood_old = -jnp.inf
+
+        for i in range(iterations):
+            # step 2 Calculate resposibilities
+            gamma, log_likelihood = self.expectation_step(X, pi, mu, sigma)
+
+            # convergence condition: if the change is minimum, we're done
+            diff = jnp.abs(log_likelihood - log_likelihood_old)
+            if diff < tolerance:
+                print(f"Convergence reach at iteration {i+1} | Log-Likelihood: {log_likelihood:.4f}")
                 break
-            cnt += 1
-            # emergency if it tends to infinite
-            if cnt > 3000:
-                print("Reached iteration limit")
-                break
-        return W
 
-    def estimate_prob(self, X: jnp) -> jnp:
-        """
-        Estimate Probability
-        """
-        X = self.augment_x(X)
-        terms = self.logistic_exp(self.W, X)
-        sum_terms = self.logistic_sum(terms)
-        matrix = self.logit_matrix(terms, sum_terms)
-        return matrix
+            log_likelihood_old = log_likelihood
 
-    def estimate(self, X: jnp) -> jnp:
-        """
-        Estimation
-        """
-        X = self.augment_x(X)
-        terms = self.logistic_exp(self.W, X)
-        sum_terms = self.logistic_sum(terms)
-        matrix = self.logit_matrix(terms, sum_terms)
-        return jnp.argmax(matrix, axis=0)
+            # step3: update parameters
+            pi, mu, sigma = self.maximization_step(X, gamma)
+
+        self.pi = pi
+        self.mu = mu
+        self.sigma = sigma
+
+        return self
 
     def calculate_metrics(self, y, y_hat):
         """
@@ -184,33 +120,3 @@ class em_algorithm:
         f1_score = 2 * (precision * recall) / jnp.maximum(precision + recall, 1e-9)
 
         return precision.tolist(), recall.tolist(), accuracy.tolist(), f1_score.tolist()
-
-    @jit
-    def expectation_step(self, X, pi, mu, sigma):
-        """
-        Calculate responsibilities 
-        """
-        log_pdf1 = jstats.multivariate_normal.logpdf(X, mu[0], sigma[0])
-        log_pdf2 = jstats.multivariate_normal.logpdf(X, mu[1], sigma[1])
-
-        log_P = jnp.column_stack([log_pdf1, log_pdf2])
-
-        log_P_weighted = log_P + jnp.log(pi)  # numerator on the equation
-
-        # denominator
-        # logsumexp cambia los datos para que no exista un underflow de datos, ademas de trabajar
-        # con la loglikelihood
-        log_P_evidence = jax.scipy.special.logsumexp(log_P_weighted, axis=1, keepdims=True)
-
-        gamma = log_P_weighted - log_P_evidence
-        gamma = jnp.exp(gamma)
-        return gamma
-    
-    @jit
-    def maximization_step(self, X, gamma):
-        """
-        Compute the weighted means and variances
-        """
-        
-        new_pi = gamma / N
-        mu1_hat = ((1 - gamma) * X) / (1 - gamma)
