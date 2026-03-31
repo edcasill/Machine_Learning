@@ -15,4 +15,6 @@ employee_db-master/
 employee_db-master.zip
 tempCode*
 data/
+t10k*/
+train*/
 __pycache__
