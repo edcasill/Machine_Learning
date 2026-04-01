@@ -20,7 +20,7 @@ def load_labels(path):
     """
     with open(path, 'rb') as f:
         # the first 8 bytes are metada
-        labels = np.frombuffer(f.read(), dtype=jnp.uint8, offset=8)
+        labels = np.frombuffer(f.read(), dtype=np.uint8, offset=8)
     return jnp.array(labels)
 
 
@@ -37,7 +37,7 @@ def load_images(path):
     with open(path, 'rb') as f:
         # the first 16 bytes are metada
         # The redimession give us a 28x28 matrices
-        images = np.frombuffer(f.read(), dtype=jnp.uint8, offset=16).reshape(-1, 28, 28)
+        images = np.frombuffer(f.read(), dtype=np.uint8, offset=16).reshape(-1, 28, 28)
     return jnp.array(images)
 
 
