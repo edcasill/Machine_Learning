@@ -3,15 +3,20 @@ import pandas as pd
 import jax
 import jax.numpy as jnp
 import numpy as np
-import MLP_matrix as MPM
-import MLP_jax as MPJ
+from MLP_matrix import Multilayer_Perceptron_Matrix as MPM
+from MLP_jax import Multilayer_Perceptron_JAX as MPJ
+import k_cross as kx
 
 
 def load_labels(path):
     """
     Load the labels from the dataset
 
-    :param labels:
+    Args:
+        path (_type_): path to the labels
+
+    Returns:
+        labels: jnp array for matrix operation
     """
     with open(path, 'rb') as f:
         # the first 8 bytes are metada
@@ -23,7 +28,11 @@ def load_images(path):
     """
     Load the images form the dataset
 
-    :param images:
+    Args:
+        path (_type_): path to the images file
+
+    Returns:
+        images: matrix with the images on a size 28x28
     """
     with open(path, 'rb') as f:
         # the first 16 bytes are metada
@@ -32,42 +41,19 @@ def load_images(path):
     return jnp.array(images)
 
 
-def k_fold(X, y, k=5, seed=73):
-    samples = len(X)
-    index = jnp.arange(samples)
-    key = jax.random.PRNGKey(seed)
-    jax.random.shuffle(key, index)
+def preprocess(images):
+    """
+    flat the images and normalice the values
 
-    # divides the samples into folds
-    folds = jnp.array_split(index, k)
-    accuracies = []
+    Args:
+        images (_type_): training or validation images to train/validate the model
 
-    for i in range(k):
-        # validation data
-        id_val = folds[i]
-
-        # training data
-        id_train = jnp.concatenate([folds[j] for j in range(k) if j != i])
-
-        X_train = X[id_train]
-        y_train = y[id_train]
-        X_val = X[id_val]
-        y_val = y[id_val]
-
-    # modelo.entrenar(X_train, y_train)
-    # predicciones = modelo.predecir(X_val)
-
-    # Calcular la precisión de este pliegue (acc_i)
-    # acc_i = np.mean(predicciones == y_val)
-
-    # temporal
-    acc_i = 0.95
-    accuracies.append(acc_i)
-
-    # Calcular la media de las precisiones (acccv)
-    acccv = jnp.mean(accuracies)
-
-    return acccv, accuracies
+    Returns:
+        images_normalized: the normaliced values of the images
+    """
+    images_flattened = images.reshape(images.shape[0], -1)
+    images_normalized = images_flattened.astype(jnp.float32) / 255.0
+    return images_normalized
 
 
 def main():
@@ -78,6 +64,9 @@ def main():
     Y_train = load_labels('archive/train-labels.idx1-ubyte')
     X_test = load_images('archive/t10k-images.idx3-ubyte')
     Y_test = load_labels('archive/t10k-labels.idx1-ubyte')
+
+    X_train = preprocess(X_train)
+    X_test = preprocess(X_test)
 
     # print(f"X_train form: {X_train}")
     # print(f"y_train form: {Y_train}")
