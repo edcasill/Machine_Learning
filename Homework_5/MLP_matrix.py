@@ -26,7 +26,13 @@ class Multilayer_Perceptron_Matrix():
             self.params[f'b{i+1}'] = jnp.zeros((1, dim_out))
 
     def forward_propagation(self, X):
-        """
+        """_summary_
+
+        Args:
+            X (_type_): _description_
+
+        Returns:
+            _type_: _description_
         """
         self.neuron_state = []
         activations_hidden = X
@@ -38,18 +44,93 @@ class Multilayer_Perceptron_Matrix():
         for i in range(1, total_layers): 
             Z_hidden = (activations_hidden @ self.params[f'W{i}']) + self.params[f'b{i}']
             self.neuron_state.append((activations_hidden, self.params[f'W{i}'], Z_hidden)) # keep the state of each neuron
-            activations_hidden = self.sigmoid(Z_hidden)
-        
+            # activations_hidden = self.sigmoid(Z_hidden)
+            activations_hidden = self.relu(Z_hidden)
+
         # forward result on output layer
         Z_out = (activations_hidden @ self.params[f'W{total_layers}']) + self.params[f'b{total_layers}']
         self.neuron_state.append((activations_hidden, self.params[f'W{total_layers}'], Z_out)) # keep the state of each neuron
         self.y_out = self.softmax(Z_out)
         return self
     
-    def backward_propagation(self):
+    def backward_propagation(self, Y):
         """
+        Backward propagation error from output layer to hidden layer
+
+        Args:
+            Y (_type_): _description_
+
+        Returns:
+            _type_: _description_
         """
+        self.gradients = {} # keep the gradients from W and Bias
+        total_transformed_layers = len(self.neuron_state)
+        batch_size = Y.shape[0] # amount of images evualuated on the forward propagation
+        self.Y = self.onehot_encoding(Y, self.layers[-1])
+
+        # output layer error
+        prev_activation, W, Z = self.neuron_state[-1] # -1 means the last item
+        dZ = self.y_out - self.Y
+
+        self.gradients[f'dW{total_transformed_layers}'] = (prev_activation.T @ dZ) / batch_size
+        self.gradients[f'db{total_transformed_layers}'] = jnp.sum(dZ, axis=0, keepdims=True) / batch_size
+
+        # error propagation to hidden layer
+        for i in reversed(range(total_transformed_layers - 1)):
+            prev_activation, W, Z = self.neuron_state[i]
+
+            W_next = self.neuron_state[i+1][1]
+            dZ_next = dZ
+
+            # propagated error * activation derivative
+            dActivation = dZ_next @ W_next.T
+            # dZ = dActivation * self.sigmoid_derivative(Z)
+            dZ = dActivation * self.relu_derivada(Z)
+
+            # gradient on actual layer
+            self.gradients[f'dW{i+1}'] = (prev_activation.T @ dZ) / batch_size
+            self.gradients[f'db{i+1}'] = jnp.sum(dZ, axis=0, keepdims=True) / batch_size
         return self
+    
+    def update_parameters(self, learning_rate):
+        total_layers = len(self.params) // 2
+
+        for i in range(1, total_layers + 1):
+            self.params[f'W{i}'] -= learning_rate * self.gradients[f'dW{i}']
+            self.params[f'b{i}'] -= learning_rate * self.gradients[f'db{i}']
+        return self
+    
+    def fit_mlp_matrix(self, X, Y, epochs, learning_rate, seed=73):
+        for epoch in range(epochs):
+            # forward prop
+            self.forward_propagation(X)
+
+            # backward prop
+            self.backward_propagation(Y)
+
+            # update data
+            self.update_parameters(learning_rate)
+
+            if epoch % 10 == 0:
+                predictions = jnp.argmax(self.y_out, axis=1)
+                precission = jnp.mean(predictions == Y)
+                print(f"Epoch {epoch} | Precisión: {precission:.4f}")
+        return self.params
+    
+    @staticmethod
+    def onehot_encoding(Y, out_classes):
+        """
+        Apply the one-hot encoding ussing jnp.eye, wich generate an identity matrix with the size of the number of
+        output classes, indexing the labels vector in it
+
+        Args:
+            Y (_type_): labels vector
+            out_classes (_type_): labels one hot
+
+        Returns:
+            _type_: _description_
+        """
+        return jnp.eye(out_classes)[Y]
     
     # activation functions
     @staticmethod

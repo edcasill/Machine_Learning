@@ -70,6 +70,8 @@ def main():
 
     # print(f"X_train form: {X_train}")
     # print(f"y_train form: {Y_train}")
+    matrix_mlp = MPM(X_train)
+    matrix_params = matrix_mlp.fit_mlp_matrix(X_train, Y_train, 1000, 0.1)
 
 
 if __name__ == "__main__":
