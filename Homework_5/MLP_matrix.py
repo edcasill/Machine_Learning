@@ -1,8 +1,5 @@
-import os
-import pandas as pd
 import jax
 import jax.numpy as jnp
-import numpy as np
 
 
 class Multilayer_Perceptron_Matrix():
@@ -26,7 +23,9 @@ class Multilayer_Perceptron_Matrix():
             self.params[f'b{i+1}'] = jnp.zeros((1, dim_out))
 
     def forward_propagation(self, X):
-        """_summary_
+        """
+        Get the first results from the mlp, passing the input values. I use ReLU instead the sigmoid for efficciency
+        and stability on the gradient
 
         Args:
             X (_type_): _description_
@@ -93,14 +92,59 @@ class Multilayer_Perceptron_Matrix():
         return self
     
     def update_parameters(self, learning_rate):
+        """
+        Update the parameters of weigth and bias
+
+        Args:
+            learning_rate (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
         total_layers = len(self.params) // 2
 
         for i in range(1, total_layers + 1):
             self.params[f'W{i}'] -= learning_rate * self.gradients[f'dW{i}']
             self.params[f'b{i}'] -= learning_rate * self.gradients[f'db{i}']
         return self
+
+    def get_metrics(self, X_test, Y_test):
+        """
+        Calculate confusion matrix, precission, Recall and F1 using the test set
+        """
+        self.forward_propagation(X_test)
+        y_pred = jnp.argmax(self.y_out, axis=1)
+        num_classes = self.layers[-1]
+
+        # confusion matrix
+        cm_1d = jnp.bincount(Y_test * num_classes + y_pred, length=num_classes**2)
+        cm = cm_1d.reshape((num_classes, num_classes))
+        
+        # Cálculo de métricas
+        TP = jnp.diag(cm)
+        FP = jnp.sum(cm, axis=0) - TP
+        FN = jnp.sum(cm, axis=1) - TP
+        epsilon = 1e-7
+        precision = TP / (TP + FP + epsilon)
+        recall = TP / (TP + FN + epsilon)
+        f1 = 2 * (precision * recall) / (precision + recall + epsilon)
+        
+        return cm, precision, recall, f1
     
-    def fit_mlp_matrix(self, X, Y, epochs, learning_rate, seed=73):
+    def fit_mlp_matrix(self, X, Y, epochs, learning_rate):
+        """
+        Learning process of the MLP
+
+        Args:
+            X (_type_): _description_
+            Y (_type_): _description_
+            epochs (_type_): _description_
+            learning_rate (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        loss_history = []
         for epoch in range(epochs):
             # forward prop
             self.forward_propagation(X)
@@ -111,11 +155,14 @@ class Multilayer_Perceptron_Matrix():
             # update data
             self.update_parameters(learning_rate)
 
+            loss = -jnp.mean(jnp.sum(self.Y * jnp.log(self.y_out + 1e-7), axis=1))
+            loss_history.append(loss)
+
             if epoch % 10 == 0:
                 predictions = jnp.argmax(self.y_out, axis=1)
                 precission = jnp.mean(predictions == Y)
-                print(f"Epoch {epoch} | Precisión: {precission:.4f}")
-        return self.params
+                print(f"Epoch {epoch} | Precisión: {precission:.4f} | Loss: {loss:.4f}")
+        return self.params, loss_history
     
     @staticmethod
     def onehot_encoding(Y, out_classes):

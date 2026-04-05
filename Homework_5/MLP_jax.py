@@ -24,7 +24,8 @@ class Multilayer_Perceptron_JAX():
 
     @staticmethod
     def forward_propagation(params, X):
-        """_summary_
+        """
+        Get the first results from the mlp, passing the input values.
 
         Args:
             params (_type_): _description_
@@ -55,15 +56,38 @@ class Multilayer_Perceptron_JAX():
         error = -jnp.sum(Y_hot * jnp.log(predictions + 1e-8)) / X.shape[0]
         return error
     
+    def get_metrics(self, X_test, Y_test):
+        """
+        Calculate metrics by evaluation of the model
+        """
+        pred_probs = self.forward_propagation(self.params, X_test)
+        y_pred = jnp.argmax(pred_probs, axis=1)
+        num_classes = self.layers[-1]
+
+        cm_1d = jnp.bincount(Y_test * num_classes + y_pred, length=num_classes**2)
+        cm = cm_1d.reshape((num_classes, num_classes))
+        
+        TP = jnp.diag(cm)
+        FP = jnp.sum(cm, axis=0) - TP
+        FN = jnp.sum(cm, axis=1) - TP
+        epsilon = 1e-7
+        precision = TP / (TP + FP + epsilon)
+        recall = TP / (TP + FN + epsilon)
+        f1 = 2 * (precision * recall) / (precision + recall + epsilon)
+        
+        return cm, precision, recall, f1
+    
     def fit_mlp_jax(self, X, Y, epochs, learning_rate):
         """
-        
+        Learning process of the MLP
         """
         # One-hot encoding
         Y_hot = jnp.eye(self.layers[-1])[Y]
         
         # gradient function
         grad_fn = jax.grad(self.loss)
+
+        loss_history = []
 
         for epoch in range(epochs):
             # get all grafients evaluating grad_fn
@@ -75,10 +99,13 @@ class Multilayer_Perceptron_JAX():
                 self.params[f'W{i}'] -= learning_rate * gradients[f'W{i}']
                 self.params[f'b{i}'] -= learning_rate * gradients[f'b{i}']
 
+            current_loss = self.loss(self.params, X, Y_hot)
+            loss_history.append(current_loss)
+
             if epoch % 10 == 0:
                 y_out = self.forward_propagation(self.params, X)
                 predictions = jnp.argmax(y_out, axis=1)
                 precision = jnp.mean(predictions == Y)
-                print(f"Epoch {epoch} | Precissionn: {precision:.4f}")
+                print(f"Epoch {epoch} | Precissionn: {precision:.4f} | Loss: {current_loss:.4f}")
 
-        return self.params
+        return self.params, loss_history
