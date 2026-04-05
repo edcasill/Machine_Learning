@@ -161,7 +161,7 @@ class Multilayer_Perceptron_Matrix():
             if epoch % 10 == 0:
                 predictions = jnp.argmax(self.y_out, axis=1)
                 precission = jnp.mean(predictions == Y)
-                print(f"Epoch {epoch} | Precisión: {precission:.4f} | Loss: {loss:.4f}")
+                print(f"Epoch {epoch} | Precisionn: {precission:.4f} | Loss: {loss:.4f}")
         return self.params, loss_history
     
     @staticmethod

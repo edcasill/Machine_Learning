@@ -99,7 +99,7 @@ def main():
                 ax.text(j, i, int(cm[i, j]), ha="center", va="center",
                         color="white" if cm[i, j] > thresh else "black")
 
-    plot_cm(ax1, cm_mat, "Manual Backpropagation")
+    plot_cm(ax1, cm_mat, "Matrix Backpropagation")
     plot_cm(ax2, cm_jax, "Autodiff Backpropagation (JAX)")
     plt.tight_layout()
     plt.savefig("Confusion matrices.png")
@@ -114,14 +114,14 @@ def main():
         print("-" * 45)
         print(f"Macro  | {jnp.mean(p):.4f}     | {jnp.mean(r):.4f}     | {jnp.mean(f1):.4f}")
 
-    print_table(p_mat, r_mat, f1_mat, "MANUAL")
-    print_table(p_jax, r_jax, f1_jax, "AUTODIFF")
+    print_table(p_mat, r_mat, f1_mat, "Matrix")
+    print_table(p_jax, r_jax, f1_jax, "Autodiff")
 
     #(c) Convergence Rate Graph
     plt.figure(figsize=(10, 5))
-    plt.plot(matrix_loss_history, label='Manual Backprop', linewidth=2)
+    plt.plot(matrix_loss_history, label='Matrix Backprop', linewidth=2)
     plt.plot(jax_loss_history, label='JAX Autodiff', linestyle='dashed', linewidth=2)
-    plt.title('Convergence Rate: Manual vs Autodiff')
+    plt.title('Convergence Rate: Matrix vs Autodiff')
     plt.xlabel('Epochs')
     plt.ylabel('Cross-Entropy Loss')
     plt.legend()
